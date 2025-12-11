@@ -81,7 +81,7 @@ const HeroCarousel = () => {
     const preloadImages = async () => {
       const imagePromises = slides.map((slide) => {
         return new Promise((resolve, reject) => {
-          const img = new Image();
+            const img = document.createElement('img'); // Create an img element instead
           img.src = slide.imageUrl;
           img.onload = () => resolve(slide.id);
           img.onerror = () =>
