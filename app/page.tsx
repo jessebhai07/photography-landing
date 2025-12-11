@@ -12,6 +12,7 @@ import {
   ChevronDown,
   MapPin,
   ArrowRight,
+  Menu,
 } from "lucide-react";
 
 // --- Mock Data ---
@@ -151,6 +152,7 @@ const AccordionItem = ({
 };
 import { X, ChevronLeft, ChevronRight } from "lucide-react"; // Make sure to update your imports
 import BeforeAfterComparison from "./BeforeAfterComparison";
+import HeroCarousel from "./HeroCarousel";
 
 const Lightbox = ({
   images,
@@ -240,6 +242,165 @@ const Lightbox = ({
   );
 };
 
+interface NavbarProps {
+  activeSection: string;
+}
+
+const Navbar = ({ activeSection }: NavbarProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  const navItems = [
+    { id: "gallery", label: "Work" },
+    { id: "about", label: "About" },
+    { id: "services", label: "Services" },
+    { id: "contact", label: "Contact" },
+  ];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Add blur background when scrolled past 20px
+      if (window.scrollY > 20) {
+        setHasScrolled(true);
+      } else {
+        setHasScrolled(false);
+      }
+    };
+
+    // Initial check
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  const scrollTo = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+      setIsOpen(false);
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50  transition-all duration-300 ${
+        hasScrolled ? "backdrop-blur-xl" : "bg-transparent border-transparent"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo */}
+          <button
+            onClick={scrollToTop}
+            className="flex items-center gap-3 font-bold text-2xl tracking-tighter group focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-neutral-950 rounded-lg p-2 transition-all"
+            aria-label="Scroll to top"
+          >
+            <Camera className="w-8 h-8 text-white group-hover:scale-110 transition-transform duration-200" />
+            <span className="bg-linear-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+              LUMOS
+            </span>
+          </button>
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center gap-8">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => scrollTo(item.id)}
+                className={`relative text-sm font-medium transition-colors duration-200 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-neutral-950 rounded-lg ${
+                  activeSection === item.id
+                    ? "text-white"
+                    : hasScrolled
+                    ? "text-neutral-400 hover:text-white"
+                    : "text-white/80 hover:text-white"
+                }`}
+                aria-current={activeSection === item.id ? "page" : undefined}
+              >
+                {item.label}
+                {activeSection === item.id && (
+                  <motion.div
+                    layoutId="navbar-active"
+                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white rounded-full"
+                  />
+                )}
+              </button>
+            ))}
+            <button
+              onClick={() => scrollTo("contact")}
+              className={`ml-4 px-6 py-3 font-semibold rounded-full transition-all duration-200  hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                hasScrolled
+                  ? "bg-white text-black hover:bg-neutral-200 focus:ring-white focus:ring-offset-neutral-950"
+                  : " text-white border border-white/20 hover:bg-white/20 focus:ring-white/20 focus:ring-offset-transparent"
+              }`}
+            >
+              Book Now
+            </button>
+          </div>
+
+          {/* Mobile Hamburger */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={`md:hidden p-2 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white/20 ${
+              hasScrolled
+                ? "text-white hover:bg-white/10"
+                : "text-white hover:bg-white/10"
+            }`}
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isOpen}
+          >
+            {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden overflow-hidden  backdrop-blur-xl"
+            >
+              <div className="py-6 px-6 space-y-4">
+                {navItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollTo(item.id)}
+                    className={`block w-full text-left px-4 py-3 text-lg font-medium rounded-lg transition-colors duration-200 ${
+                      activeSection === item.id
+                        ? "text-white bg-white/10"
+                        : "text-neutral-400 hover:text-white hover:bg-white/5"
+                    } focus:outline-none focus:ring-2 focus:ring-white/20`}
+                    aria-current={
+                      activeSection === item.id ? "page" : undefined
+                    }
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                <button
+                  onClick={() => scrollTo("contact")}
+                  className="w-full mt-4 px-4 py-4 bg-white text-black font-bold rounded-xl text-center hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-neutral-950"
+                >
+                  Book Now
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </nav>
+  );
+};
+
 export default function Portfolio() {
   const [activeAccordion, setActiveAccordion] = useState<number | null>(0);
   const [formData, setFormData] = useState({
@@ -295,14 +456,14 @@ export default function Portfolio() {
 
       // 2. Handle Active Link Highlighting (Spy)
       const sections = ["gallery", "about", "services", "contact"];
-      
+
       // Find which section is currently most visible in the viewport
       const current = sections.find((section) => {
         const element = document.getElementById(section);
         if (element) {
           const rect = element.getBoundingClientRect();
           // Active if top of section is within upper 1/3 of viewport
-          return rect.top >= 0 && rect.top <= 300; 
+          return rect.top >= 0 && rect.top <= 300;
         }
         return false;
       });
@@ -310,16 +471,19 @@ export default function Portfolio() {
       // Fallback: If no section matches (e.g., we are deep inside a section),
       // find the one that covers the middle of the screen
       if (!current) {
-         for (const section of sections) {
-           const element = document.getElementById(section);
-           if (element) {
-             const rect = element.getBoundingClientRect();
-             if (rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2) {
-               setActiveSection(section);
-               return;
-             }
-           }
-         }
+        for (const section of sections) {
+          const element = document.getElementById(section);
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            if (
+              rect.top < window.innerHeight / 2 &&
+              rect.bottom > window.innerHeight / 2
+            ) {
+              setActiveSection(section);
+              return;
+            }
+          }
+        }
       } else {
         setActiveSection(current);
       }
@@ -330,7 +494,10 @@ export default function Portfolio() {
   }, []);
 
   // Smooth Scroll Helper
-  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+  const scrollToSection = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    id: string
+  ) => {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
@@ -341,6 +508,10 @@ export default function Portfolio() {
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-neutral-700 selection:text-white">
       <Toaster position="bottom-right" theme="dark" />
+
+      {/* Navigation */}
+      <Navbar activeSection={activeSection} />
+
       {/* --- ADD LIGHTBOX HERE --- */}
       <AnimatePresence>
         {lightboxIndex !== null && (
@@ -354,101 +525,8 @@ export default function Portfolio() {
         )}
       </AnimatePresence>
 
-      {/* Navigation */}
-      <nav 
-        className={`fixed top-0 w-full z-50 transition-all duration-300 border-b ${
-          isScrolled 
-            ? "bg-neutral-950/80 backdrop-blur-md border-white/5 py-0" 
-            : "bg-transparent border-transparent py-4"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2 font-bold text-xl tracking-tighter cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <Camera className="w-6 h-6" />
-            <span>LUMOS</span>
-          </div>
-          
-          <div className="hidden md:flex gap-8 text-sm font-medium text-neutral-400">
-            {["gallery", "about", "services", "contact"].map((item) => (
-              <a 
-                key={item}
-                href={`#${item}`} 
-                onClick={(e) => scrollToSection(e, item)}
-                className={`transition-colors capitalize relative hover:text-white ${
-                  activeSection === item ? "text-white" : ""
-                }`}
-              >
-                {item === "gallery" ? "Work" : item}
-                {/* Active Indicator Dot */}
-                {activeSection === item && (
-                  <motion.div 
-                    layoutId="active-dot"
-                    className="absolute -bottom-2 left-0 right-0 h-0.5 bg-white rounded-full" 
-                  />
-                )}
-              </a>
-            ))}
-          </div>
-          
-          <a 
-            href="#contact"
-            onClick={(e) => scrollToSection(e, "contact")}
-            className="px-5 py-2 bg-white text-black text-sm font-semibold rounded-full hover:bg-neutral-200 transition-colors"
-          >
-            Book Now
-          </a>
-        </div>
-      </nav>
-
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="https://images.pexels.com/photos/245208/pexels-photo-245208.jpeg?auto=compress&cs=tinysrgb&w=1600"
-            alt="Hero Background"
-            fill
-            className="object-cover opacity-40 grayscale"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-transparent" />
-        </div>
-
-        <div className="relative z-10 text-center max-w-4xl px-6">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-5xl md:text-8xl font-bold tracking-tighter mb-6"
-          >
-            Capturing the <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-neutral-100 to-neutral-500">
-              Unspoken Moments
-            </span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="text-lg md:text-xl text-neutral-400 max-w-2xl mx-auto mb-10"
-          >
-            Professional photography focusing on raw emotions, architectural
-            symmetry, and the beautiful chaos of daily life.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <a
-              href="#gallery"
-              className="inline-flex items-center gap-2 border-b border-white pb-1 hover:text-neutral-300 transition-colors"
-            >
-              View Selected Works <ArrowRight className="w-4 h-4" />
-            </a>
-          </motion.div>
-        </div>
-      </section>
+      <HeroCarousel />
 
       {/* Gallery Grid */}
       <section id="gallery" className="py-24 px-6 max-w-7xl mx-auto">
